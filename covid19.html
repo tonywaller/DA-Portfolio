@@ -1,0 +1,432 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Data Analyst Portfolio Site for Tony Waller</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/analytics-icon.svg" alt="" /></span><span class="title">Tony Waller</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="covid19.html">Covid-19</a></li>
+							<li><a href="adventure_works_cycles.html">Adventure Works Cycles</a></li>
+							<li><a href="generic.html">Third Project - Not Finished</a></li>
+							<li><a href="elements.html">Elements</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Covid-19 SQL Project</h1>
+							<span class="image main"><img src="images/outbreak-coronavirus-world-1024x506px.jpg" alt="Virus image" /></span>
+							<h2>Introduction</h2>
+							<p>Covid-19 and the pandemic have impacted all of our lives - from personal tragedy in the loss of family and friends to loss of employment, closed businesses, shortages of goods and services, etc.
+							One specific area where almost everyone has significantly been touched in some way has been in the loss of a family member or friend.</p>
+							<p>I personally have family members who have served on the front line of the pandemic, working in the heathcare sector as nurses. Specifically, my
+							sister has worked in the ICU of a small hospital in Georgia, USA. She has relayed many sad stories of the losses incurred during the pandemic, often with the
+							patient passing without any family present.  </p>
+							<p>The vaccines that were introduced for Covid-19 are a significant piece of this data that I am analyzing in this project. The dataset comes from <a href="https://ourworldindata.org" target="_blank">Our World In Data</a>, 
+							and the specific dataset can be downloaded as a CSV file. I downloaded the dataset included in this SQL portfolio project on 26 March, 2022, so the data is some of the most current available. So, whether 
+							you are skeptical of the vaccines, as some continue to be, I hope you will look at the data presented with the understanding that I am presenting the data 
+							as collected and not making any scientific or political statements with my portfolio. Also, there are many other factors that come into play, such as immunity from COVID-19 infection. </p>
+							<p>There are a number of risks in using this dataset. The risks include the collecting of data from multiple sources, as the data comes from multiple agencies from around the world. Therefore, the 
+							reliability of the data cannot be confirmed, only reported on.</p>
+							<h2>Specific comments on the dataset</h2>
+							<p>The dataset was downloaded as a single .CSV file in which I split it into two Excel spreadsheets: one for Covid deaths and cases and the second for 
+							Covid tests and vaccinations. I split them into two files (and subsequently two tables) to demonstrate use of SQL JOINs. I loaded the Excel spreadsheets into a Microsoft SQL Server database that I created using Microsoft SQL Server Management Studio.
+							Initially, I used the SQL Server Import and Export Data tool to create the two tables and import the spreadsheets, but I wanted different
+							data types for some of the fields other than the defaults used by the Import tool. I also excluded some of the columns in the spreadsheets that were not relevant for my analysis.
+							Before importing the data, I created the DDL script to create the tables using the fields and data types I wanted for the data. In hindsight, I could have further reduced the number of fields imported into each table. </p>
+							<p>In addition to the two tables created from the dataset, I also created a calendar lookup table, since many of the SQL statements rely on the entry_date for select and join criteria.  </p>
+							
+							<p><b>Below are the CREATE TABLE commands to create the three tables in SQL Server.</b></p>
+							<pre><code>CREATE TABLE covid_db..covid_vaccinations
+(
+	cv_id uniqueidentifier PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+	iso_code VARCHAR(10),
+	continent VARCHAR(50),
+	location VARCHAR(50),
+	entry_date DATE,
+	new_tests BIGINT,
+	total_tests BIGINT,
+	total_tests_per_thousand NUMERIC(12,3),
+	new_tests_per_thousand NUMERIC(12,3),
+	new_tests_smoothed NUMERIC(12,3),
+	new_tests_smoothed_per_thousand NUMERIC(12,3),
+	positive_rate NUMERIC(12,3),
+	tests_per_case NUMERIC(12,3),
+	tests_units VARCHAR(30),
+	total_vaccinations BIGINT,
+	people_vaccinated BIGINT,
+	people_fully_vaccinated BIGINT,
+	total_boosters BIGINT,
+	new_vaccinations BIGINT,
+	new_vaccinations_smoothed NUMERIC(12,3),
+	total_vaccinations_per_hundred NUMERIC(12,3),
+	people_vaccinated_per_hundred NUMERIC(12,3),
+	people_fully_vaccinated_per_hundred NUMERIC(12,3),
+	total_boosters_per_hundred NUMERIC(12,3),
+	new_vaccinations_smoothed_per_million NUMERIC(12,3),
+	new_people_vaccinated_smoothed NUMERIC(12,3),
+	new_people_vaccinated_smoothed_per_hundred NUMERIC(12,3),
+	stringency_index NUMERIC(12,3),
+	population_density NUMERIC(12,3),
+	median_age NUMERIC(12,3),
+	aged_65_older NUMERIC(12,3),
+	aged_70_older NUMERIC(12,3)
+	)
+
+CREATE TABLE covid_db..covid_deaths
+(
+	cd_id uniqueidentifier PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+	iso_code VARCHAR(10),
+	continent VARCHAR(50),
+	location VARCHAR(50),
+	entry_date DATE,
+	population BIGINT,
+	total_cases BIGINT,
+	new_cases BIGINT,
+	new_cases_smoothed NUMERIC(12,3),
+	total_deaths BIGINT,
+	new_deaths BIGINT,
+	new_deaths_smoothed NUMERIC(12,3),
+	total_cases_per_million NUMERIC(12,3),
+	new_cases_per_million NUMERIC(12,3),
+	new_cases_smoothed_per_million NUMERIC(12,3),
+	total_deaths_per_million NUMERIC(12,3),
+	new_deaths_per_million NUMERIC(12,3),
+	new_deaths_smoothed_per_million NUMERIC(12,3),
+	reproduction_rate NUMERIC(12,3),
+	icu_patients BIGINT,
+	icu_patients_per_million NUMERIC(12,3),
+	hosp_patients BIGINT,
+	hosp_patients_per_million NUMERIC(12,3),
+	weekly_icu_admissions BIGINT,
+	weekly_icu_admissions_per_million NUMERIC(12,3),
+	weekly_hosp_admissions BIGINT,
+	weekly_hosp_admissions_per_million NUMERIC(12,3)
+)
+
+CREATE TABLE covid_db..calendar
+(
+	date_value DATE,
+	day_of_week_number INT,
+	day_of_week_name VARCHAR(10),
+	day_of_month_number INT,
+	month_number INT,
+	year_number INT
+)</code></pre>
+							<p><b>SQL statements to insert data into the calendar lookup table.</b></p>
+							<pre><code>--Insert dates into table with recursive CTE
+WITH calendar_dates AS
+(
+SELECT
+ CAST('01-01-2020' AS DATE) AS my_date
+
+UNION ALL
+
+SELECT
+DATEADD(DAY, 1, my_date)
+FROM calendar_dates
+WHERE my_date < CAST('12-31-2022' AS DATE)
+)
+
+INSERT INTO covid_db..calendar
+(
+date_value
+)
+SELECT
+my_date
+FROM calendar_dates
+OPTION (MAXRECURSION 1200)
+
+--Update NULL fields in calendar table
+UPDATE covid_db..calendar
+SET
+day_of_week_number = DATEPART(WEEKDAY,date_value),
+day_of_week_name = FORMAT(date_value,'dddd'),
+day_of_month_number = DAY(date_value),
+month_number = MONTH(date_value),
+year_number = YEAR(date_value)
+</code></pre>
+							<p><b>Screenshot showing a subset of data added to calendar lookup table.</b></p>
+							<pre><code><img src="images/Screenshot 1.png" alt="">
+							</code></pre>
+							<h4>Digging further into our dataset </h4>
+							<p><b>Find the beginning and ending dates for our dataset. Select the first and last dates in the dataset using MIN and MAX functions.</b></p>
+							<pre><code>SELECT MIN(entry_date) AS 'Beginning Date', MAX(entry_date) AS 'End Date' from covid_deaths
+							</code></pre>
+							<p><b>Screenshot showing begin and end dates for our dataset.</b></p>
+							<pre><code><img src="images/Screenshot 2.png" alt="">
+							</code></pre>
+							<p><b>Retrieve the number of rows in each of the two main tables.</b></p>
+							<pre><code>-- Retrieve the number of rows for the two main tables
+SELECT COUNT(*) AS 'Rows in covid_deaths table'
+FROM covid_deaths
+SELECT COUNT(*) AS 'Rows in covid_vaccinations table'
+FROM covid_vaccinations
+							</code></pre>
+							<p><b>Results from the above SELECT statements</b></p>
+							<pre><code><img src="images/Screenshot 13.png" alt="">
+							</code></pre>
+							<p>Looking at the continent and location columns, the continent is usually what we think of as a continent; for example,
+							North American, Europe, Africa, etc. The location, for the most part, is the country within the continent. However, upon further
+							research, some rows have a NULL value for continent and the location is a value other than the country. Below is the SELECT statement using
+							SELECT DISTINCT with a filter on the WHERE clause checking for NULL values. These rows with a NULL value in the continent column hold totals by continent
+							or income level. I won't be using these specific rows, so I will filter them out.</p>
+							<p><b>Returns rows filtered where continent is NULL.</b></p>
+							<pre><code>SELECT DISTINCT location
+FROM covid_deaths
+WHERE continent IS NULL
+ORDER BY location
+							</code></pre>
+							<p><b>Result set returned from SELECT DISTINCT</b></p>
+							<pre><code><img src="images/Screenshot 3.png" alt="">
+							</code></pre>
+							<p><b>Return the number of days with new cases reported for Canada, Mexico, and United States using COUNT(*) AND GROUP BY</b></p>
+							<pre><code>SELECT location AS 'Location', 
+	COUNT(*) AS 'Number Days With New Cases Reported'
+FROM covid_deaths
+WHERE location IN ('Canada', 'Mexico', 'United States') and new_cases is not null and new_cases > 0
+GROUP BY location
+							</code></pre>
+							<p><b>Results from the above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 4.png" alt="">
+							</code></pre>
+							<p><b>Return the total cases for the US for the month of September, 2021 using the SUM aggregate function and date functions.</b></p>
+							<pre><code>-- Total cases for US for 09/2021 using SUM aggregate function and date functions
+SELECT SUM(new_cases) AS "Total Cases for US"
+FROM covid_deaths
+WHERE location = 'United States'
+AND YEAR(entry_date) = 2021
+AND DATENAME(MONTH, entry_date) = 'September'
+
+							</code></pre>
+							<p><b>Results from above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 5.png" alt="">
+							</code></pre>
+							<p><b>Return the total new cases from Canada, Mexico, and the US for September, 2021 using the SUM aggregate function, BETWEEN logical operator and the GROUP BY and HAVING clauses.</b></p>
+							<pre><code>-- Total new cases for Canada, Mexico, and US for 09/2021 using SUM aggregate function, BETWEEN logical operator, and GROUP BY and HAVING clauses
+SELECT location AS Country, SUM(new_cases) AS "Total Cases" 
+FROM covid_deaths
+WHERE entry_date BETWEEN '2021-09-01' AND '2021-09-30'
+GROUP BY location
+HAVING location IN ('Canada', 'Mexico', 'United States')
+
+							</code></pre>
+							<p><b>Results from the above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 6.png" alt="">
+							</code></pre>
+							<p><b>Return the total cases and vaccinations for Canada, Mexico, and US for September, 2021 using INNER JOIN, 
+							SUM aggregate function, BETWEEN logical operator, and GROUP BY and HAVING clauses.</b></p>
+							<pre><code>-- Total cases and vaccinations for Canada, Mexico, and US for 09/2021 using INNER JOIN, SUM aggregate function, BETWEEN logical operator, 
+-- and GROUP BY and HAVING clauses
+SELECT cod.location AS Country, SUM(cod.new_cases) AS "Total New Cases", SUM(cov.new_vaccinations) AS "Total New Vaccinations"
+FROM covid_deaths cod
+JOIN covid_vaccinations cov
+ON cod.location = cov.location 
+AND cod.entry_date = cov.entry_date
+WHERE cod.entry_date BETWEEN '2021-09-01' AND '2021-09-30'
+GROUP BY cod.location
+HAVING cod.location IN ('Canada', 'Mexico', 'United States')
+							</code></pre>
+							<p><b>Results from the above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 7.png" alt="">
+							</code></pre>
+							<p><b>Return the new cases and new vaccinations for US for each day in September, 2021 using INNER JOIN and BETWEEN logical operator.</b></p>
+							<pre><code>-- New cases and new vaccinations for US for each day in 09/2021 using INNER JOIN and BETWEEN logical operator
+SELECT cod.location AS Country, 
+	cod.entry_date, 
+	cod.new_cases AS "Total New Cases", 
+	cov.total_vaccinations AS "Total New Vaccinations"
+FROM covid_deaths cod
+JOIN covid_vaccinations cov
+ON cod.location = cov.location 
+AND cod.entry_date = cov.entry_date
+WHERE cod.location = 'United States'
+AND cod.entry_date BETWEEN '2021-09-01' AND '2021-09-30'
+							</code></pre>
+							<p><b>Results from the above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 8.png" alt="">
+							</code></pre>
+							<p><b>Return daily running totals for total cases and vaccinations reported for US in September, 2021 using INNER JOIN, 
+ BETWEEN clause, and a window function.</b></p>
+							<pre><code>-- Daily running totals for total cases and vaccinations reported for US in 09/2021 using INNER JOIN, 
+-- BETWEEN clause, and a window function
+SELECT cod.location AS Country, 
+	cod.entry_date, 
+	cod.new_cases AS "New Cases", 
+	SUM(cod.new_cases) OVER (PARTITION BY cod.location ORDER BY cod.entry_date ROWS UNBOUNDED PRECEDING) AS "Running Total for New Cases",
+	cov.new_vaccinations AS "New Vaccinations",
+	SUM(cov.new_vaccinations) OVER (PARTITION BY cod.location ORDER BY cod.entry_date ROWS UNBOUNDED PRECEDING) AS "Running Total for New Vaccinations"
+FROM covid_deaths cod
+JOIN covid_vaccinations cov
+ON cod.location = cov.location 
+AND cod.entry_date = cov.entry_date
+WHERE cod.location = 'United States'
+AND cod.entry_date BETWEEN '2021-09-01' AND '2021-09-30'
+							</code></pre>
+							<p><b>Results from the above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 9.png" alt="">
+							</code></pre>
+							<p><b>Return rolling percentage of people vaccinated using CTE.</b> Filter out rows where new vaccinations contain a NULL value. This
+							is a case where the data isn't as expected. The new_vaccinations column contains the total new vaccinations for
+							each day, so a person could be receiving their second vaccination, thus schewing my percentages. Having documented this issue,
+							I will continue to use the SELECT statement to document the use of the CTE and a window function.</p>
+							<pre><code>-- Find rolling percentage of people vaccinated using CTE
+-- Filter out rows where new vaccinations contain a null value
+;WITH rolling_vaccinations
+AS
+(
+SELECT cod.location, 
+	cod.entry_date, 
+	cod.population, 
+	cov.new_vaccinations, 
+	SUM(cov.new_vaccinations) OVER (PARTITION BY cod.location ORDER BY cod.entry_date) AS rolling_totals
+FROM covid_deaths cod
+JOIN covid_vaccinations cov
+	ON cod.location = cov.location
+	AND cod.entry_date = cov.entry_date
+WHERE cod.location = 'United States'
+AND new_vaccinations IS NOT NULL
+)
+Select *, (rolling_totals*1.0/population)*100 AS "Percentage of Population Vaccinated"
+From rolling_vaccinations
+							</code></pre>
+							<p><b>A subset of the results from the above SELECT statement.</b> As noted above the percentages increase above 
+							100% when taken against the total population because people received more than one vaccination shot.</p>
+							<pre><code><img src="images/Screenshot 10.png" alt="">
+							</code></pre>
+							<p><b>Return the same results as the above query except use temporary tables instead of CTE.</b> The same issue noted above
+							with the new_vaccinations column still applies here as well, but I am still showing the use of a temporary table.</p>
+							<pre><code>-- Find same results as above query except use temporary tables instead of CTE. 
+DROP TABLE IF EXISTS #rolling_vaccinations
+CREATE TABLE #rolling_vaccinations
+(
+	location VARCHAR(50),
+	entry_date DATE,
+	population BIGINT,
+	new_vaccinations BIGINT,
+	rolling_totals BIGINT
+)
+
+INSERT INTO #rolling_vaccinations
+SELECT cod.location, 
+	cod.entry_date, 
+	cod.population, 
+	cov.new_vaccinations, 
+	SUM(cov.new_vaccinations) OVER (PARTITION BY cod.location ORDER BY cod.entry_date) AS rolling_totals
+FROM covid_deaths cod
+JOIN covid_vaccinations cov
+	ON cod.location = cov.location
+	AND cod.entry_date = cov.entry_date
+WHERE cod.location = 'United States'
+AND new_vaccinations IS NOT NULL
+
+Select *, (rolling_totals*1.0/population)*100 AS "Percentage of Population Vaccinated"
+From #rolling_vaccinations
+
+DROP TABLE #rolling_vaccinations
+							</code></pre>
+							<p><b>A subset of the results from the above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 11.png" alt="">
+							</code></pre>
+							<p><b>Return the percentage of deaths, cases, people with at least one vaccine dose and people fully vaccinated to population by country for North America.</b></p>
+							<pre><code>-- Find percentage of deaths, cases, people with at least one vaccine dose and people fully vaccinated to population for North America.
+;WITH max_figures 
+AS
+(
+SELECT cod.location, cod.population,
+	MAX(cod.total_deaths) AS total_deaths,
+	MAX(cod.total_cases) AS total_cases,
+	MAX(cov.people_vaccinated) AS total_vaccinated, 
+	MAX(cov.people_fully_vaccinated) AS total_fully_vaccinated
+FROM covid_deaths cod
+JOIN covid_vaccinations cov
+	ON cod.location = cov.location
+	AND cod.entry_date = cov.entry_date
+WHERE cod.continent = 'North America'
+GROUP BY cod.location, population
+) 
+SELECT location, 
+total_deaths*1.0/population*100 AS 'Percentage Deaths to Population',
+total_cases*1.0/population*100 AS 'Percentage Cases to Population',
+total_vaccinated*1.0/population*100 AS 'Percentage Vaccinated to Population',
+total_fully_vaccinated*1.0/population*100 AS 'Percentage Fully Vaccinated to Population'
+FROM max_figures
+ORDER BY 3 DESC
+	
+
+							</code></pre>
+							<p><b>Results from the above SELECT statement.</b></p>
+							<pre><code><img src="images/Screenshot 12.png" alt="">
+							</code></pre>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section class="split contact">
+							<section class="alt">
+								<h4>Address</h4>
+								<p>Metro-Atlanta, GA </p>
+							</section>
+							<section>
+								<h4>Email</h4>
+								<p><a href="mailto:tony@twotwentyweb.com" target="_blank" >tony@twotwentyweb.com</a></p>
+							</section>
+							<section>
+								<h4>Social</h4>
+								<ul class="icons alt">
+									<li><a href=https://www.linkedin.com/in/tony-waller-4546a566/ target="_blank" class="icon brands style2 fa-linkedin"><span class="label">LinkedIn</span></a></li>
+									<li><a href="https://github.com/tonywaller" target="_blank" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:tony@twotwentyweb.com" target="_blank" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+						</section>
+					</footer>
+
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
